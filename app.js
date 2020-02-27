@@ -9,8 +9,11 @@ const cors = require('cors')
 
 // importing routes
 const milestoneRoutes = require('./routes/milestones')
+const authRoutes = require('./routes/auth')
+
 // creating middleware
 app.use('/milestones', milestoneRoutes)
+app.use('/user', authRoutes)
 app.use(cors)
 
 const mongoose = require('mongoose')
