@@ -6,9 +6,17 @@ const Milestone = require('../models/milestones')
 
 const Joi = require('joi')
 
+const {validateMilestone} = require('../validators')
+
 router.use(express.json());
 
-router.get('/', async (req, res) => {
+const verifyToken = require('./helpers')
+
+// now this is a private route
+router.get('/', verifyToken, async (req, res) => {
+
+    // we can use req.user
+    // findOne({_id: req.user._id})
     try{
         const milestones = await Milestone.find()
         return res.json(milestones)
@@ -61,14 +69,8 @@ router.patch('/:id', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-    const schema = {
-        'title': Joi.string().min(3).required()
-    }
-
-    // make this as function if similar validations is happening in some other API
-    //const validatedBody = Joi.validate(req.body, schema)
-
-    const {error} = Joi.validate(req.body, schema) // return_of_function.error === {error}
+    
+    const {error} = validateMilestone(req.body) // return_of_function.error === {error}
     // if (!req.body.name || req.body.name.length <3){
     if (error){
         // also loop through the errors and concatenate as string
