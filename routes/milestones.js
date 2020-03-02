@@ -10,7 +10,7 @@ const {validateMilestone} = require('../validators')
 
 router.use(express.json());
 
-const verifyToken = require('./helpers')
+const verifyToken = require('../helpers')
 
 // now this is a private route
 router.get('/', verifyToken, async (req, res) => {
