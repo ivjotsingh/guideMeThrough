@@ -16,3 +16,4 @@ module.exports = function verifyToken(req, res, next){
         if (err) {req.send.err}
     }
 }
+
