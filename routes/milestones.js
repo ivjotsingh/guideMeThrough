@@ -18,7 +18,6 @@ router.get('/', verifyToken, async (req, res) => {
     // we can use req.user
     // findOne({_id: req.user._id})
     try{
-        console.log("coming here")
         const milestones = await Milestone.find()
         return res.json(milestones)
     }catch(err){
