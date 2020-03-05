@@ -37,7 +37,6 @@ router.get('/:id', async (req, res) => {
         }
         return res.json(milestone)
     }catch(err){
-        console.log("coming here")
         return res.status(400).json(err)
     }
 })
@@ -89,12 +88,6 @@ router.post('/', async (req, res) => {
             'message': err
         })
     }
-    // const milestone = {
-    //     "id": milestones.length + 1,
-    //     "name": req.body.name
-    // }
-    // milestones.push(milestone)
-    // return res.send(milestone)
 })
 
 module.exports = router
