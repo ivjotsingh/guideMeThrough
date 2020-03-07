@@ -7,7 +7,6 @@ const express = require('express')
 const graphqlHttp = require('express-graphql')
 
 
-
 // allows us to define schema following graphql specifications etc
 // buildSchema allows us to build schema in string(template literal) from and convert to JSON by it's own
 const {buildSchema} = require('graphql')
@@ -15,7 +14,8 @@ const {buildSchema} = require('graphql')
 // function returns object of type express and by convention we call that app
 const app = express()
 
-checkpoints = []
+
+const Checkpoint = require('../guideMeThrough/models/checkpoint')
 // endpoint where all the graphql requests will be handled 
 // as a object we will configure our GraphQl API-> queries to handle, where to find the resolvers 
 app.use('/graphql', graphqlHttp({
@@ -28,6 +28,7 @@ app.use('/graphql', graphqlHttp({
             title: String!
             description: String
             number: Int
+            created: String!
         }
 
         input CheckpointInput{
@@ -53,18 +54,18 @@ app.use('/graphql', graphqlHttp({
     // name must be unique as graphQl don't have any namespace kind of things
 
     rootValue: {
-        checkpoints: () => {
-            return checkpoints
+        checkpoints: async () => {
+            const checkpoints = await Checkpoint.find()
+            return (checkpoints.map(checkpoint => {return { ...checkpoint._doc, _id: checkpoint.id, created: checkpoint.created.toString()}}))
         },
-        createCheckpoint: (args) => {
-            const checkpoint = {
-                _id: Math.random().toString(),
+        createCheckpoint: async (args) => {
+            const checkpoint = new Checkpoint({
                 title: args.checkpointInput.title,
                 description: args.checkpointInput.description,
                 number: args.checkpointInput.number
-            }
-            checkpoints.push(checkpoint)
-            return checkpoint;
+            })
+            checkpointData = await checkpoint.save()
+            return {...checkpoint._doc, _id: checkpoint.id, created: checkpoint.created.toString()}
         }
     },
     graphiql: true
