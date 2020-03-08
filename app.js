@@ -15,7 +15,24 @@ const {buildSchema} = require('graphql')
 const app = express()
 
 
-const Checkpoint = require('../guideMeThrough/models/checkpoint')
+const Checkpoint = require('./models/checkpoint')
+const Milestone = require('./models/milestones')
+
+const getCheckpointById  = async (checkpointId) => {
+    const checkpoint_data = await Checkpoint.findById(checkpointId)
+    // console.log("logging assignedCheckPoint old")
+    // console.log(assignedCheckpoint)
+
+    console.log("logging checkpoint data")
+    console.log(checkpoint_data)
+
+    // console.log("logging assignedCheckPoint")
+    // console.log(assignedCheckpoint)
+    
+    
+    return checkpoint_data
+}
+
 // endpoint where all the graphql requests will be handled 
 // as a object we will configure our GraphQl API-> queries to handle, where to find the resolvers 
 app.use('/graphql', graphqlHttp({
@@ -37,12 +54,31 @@ app.use('/graphql', graphqlHttp({
             number: Int
         }
 
+        type assignedCheckpoint{
+            checkpoint: Checkpoint!
+            completed: Boolean
+        }
+
+        input assignCheckpointInput{
+            checkpointID: ID!
+            milestoneID: ID!
+        }
+
+        type Milestone{
+            _id: ID!
+            title: String!
+            created: String!
+            assignedCheckpoints: [assignedCheckpoint!]!
+        }
+
         type RootQuery{
             checkpoints: [Checkpoint!]!
+            milestones: [Milestone!]!
         }
 
         type RootMutation{
             createCheckpoint(checkpointInput: CheckpointInput): Checkpoint
+            assignCheckpoint(assignCheckpointInput: assignCheckpointInput): Milestone
         }
 
         schema {
@@ -58,6 +94,7 @@ app.use('/graphql', graphqlHttp({
             const checkpoints = await Checkpoint.find()
             return (checkpoints.map(checkpoint => {return { ...checkpoint._doc, _id: checkpoint.id, created: checkpoint.created.toString()}}))
         },
+
         createCheckpoint: async (args) => {
             const checkpoint = new Checkpoint({
                 title: args.checkpointInput.title,
@@ -66,6 +103,23 @@ app.use('/graphql', graphqlHttp({
             })
             checkpointData = await checkpoint.save()
             return {...checkpoint._doc, _id: checkpoint.id, created: checkpoint.created.toString()}
+        },
+
+        milestones: async (args) => {
+            const milestones = await Milestone.find()
+            console.log(milestones)
+            return milestones.map(milestone => { return { ...milestone._doc,  _id: milestone.id, created: milestone.created.toString()}})
+        },
+
+        assignCheckpoint: async (args) => {
+            console.log("comign here")
+            const checkpointID = args.assignCheckpointInput.checkpointID
+            const milestoneID = args.assignCheckpointInput.milestoneID
+            const checkpoint = await Checkpoint.findById(checkpointID)
+            const milestone = await Milestone.findById(milestoneID)
+            milestone.assignedCheckpoints.push({checkpoint: checkpoint, completed: false})
+            const milestone_data = await milestone.save()
+            return { ...milestone_data._doc, assignedCheckpoints: milestone_data.assignedCheckpoints.map(assignedCheckpoint => {return {...assignedCheckpoint._doc, checkpoint:getCheckpointById(checkpoint.id)}})}           
         }
     },
     graphiql: true
