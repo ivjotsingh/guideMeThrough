@@ -1,3 +1,5 @@
+// todo add authentication and break the code into modules
+
 // require('express') will return a function 
 const express = require('express')
 
