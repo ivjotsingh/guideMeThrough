@@ -1,11 +1,13 @@
 FROM node
 
+RUN mkdir -p /app
+
 WORKDIR /app
 
-COPY package*.json /app
+COPY package*.json ./
 RUN npm install
 COPY . /app
 
-CMD node app.js
+CMD ["npm", "start"]
 
 EXPOSE 8080
